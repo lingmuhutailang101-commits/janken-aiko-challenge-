@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>あいこ3回チャレンジ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      color: #aaa;
+      font-size: 0.9rem;
+      margin-bottom: 40px;
+    }
+
+    .status {
+      background: rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .aiko-count {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #e94560;
+      line-height: 1;
+    }
+
+    .aiko-label {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar {
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e94560, #f5a623);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    .round-count {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 10px;
+    }
+
+    .hands {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .hand-btn {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 2.5rem;
+      padding: 16px 20px;
+      transition: transform 0.15s, background 0.15s, border-color 0.15s;
+      width: 100px;
+    }
+
+    .hand-btn:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: rgba(255,255,255,0.5);
+      transform: translateY(-4px);
+    }
+
+    .hand-btn:active { transform: translateY(0); }
+    .hand-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .hand-label { font-size: 0.8rem; margin-top: 4px; }
+
+    .result-area {
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .vs-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 2rem;
+    }
+
+    .vs-label { font-size: 0.75rem; color: #aaa; }
+    .vs-text { font-size: 1.2rem; color: #aaa; }
+
+    .result-text {
+      font-size: 1.4rem;
+      font-weight: bold;
+      animation: pop 0.3s ease;
+    }
+
+    .result-text.aiko { color: #f5a623; }
+    .result-text.other { color: #888; }
+
+    @keyframes pop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .finish {
+      background: rgba(233,69,96,0.15);
+      border: 2px solid #e94560;
+      border-radius: 16px;
+      padding: 28px;
+      animation: pop 0.4s ease;
+    }
+
+    .finish h2 { font-size: 1.6rem; margin-bottom: 8px; }
+
+    .finish .big-num {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #f5a623;
+      line-height: 1;
+    }
+
+    .finish .comment {
+      font-size: 1rem;
+      color: #ccc;
+      margin: 12px 0 20px;
+    }
+
+    .retry-btn {
+      background: #e94560;
+      border: none;
+      border-radius: 999px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 12px 32px;
+      transition: opacity 0.15s;
+    }
+
+    .retry-btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>✊ あいこ3回チャレンジ</h1>
+  <p class="subtitle">あいこが3回出るまでに何回かかる？</p>
+
+  <div class="status">
+    <div class="aiko-count" id="aikoCount">0</div>
+    <div class="aiko-label">あいこ / 3回</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="round-count" id="roundCount">0 回目</div>
+  </div>
+
+  <div class="hands" id="hands">
+    <button class="hand-btn" onclick="play('グー')">✊<div class="hand-label">グー</div></button>
+    <button class="hand-btn" onclick="play('チョキ')">✌️<div class="hand-label">チョキ</div></button>
+    <button class="hand-btn" onclick="play('パー')">✋<div class="hand-label">パー</div></button>
+  </div>
+
+  <div class="result-area" id="resultArea">
+    <p style="color:#555">手を選んでじゃんけん！</p>
+  </div>
+</div>
+
+<script>
+  const HANDS = ["グー", "チョキ", "パー"];
+  const EMOJI = { "グー": "✊", "チョキ": "✌️", "パー": "✋" };
+  const COMMENT = [
+    [1, 3, "神がかり的な強運！！"],
+    [4, 6, "超強運！すごい！"],
+    [7, 10, "なかなかの運の持ち主！"],
+    [11, 20, "まあまあかな？"],
+    [21, 99, "運をもう少し鍛えよう…"],
+  ];
+
+  let aiko = 0, total = 0;
+
+  function play(player) {
+    const cpu = HANDS[Math.floor(Math.random() * 3)];
+    total++;
+
+    const isAiko = player === cpu;
+    if (isAiko) aiko++;
+
+    document.getElementById("aikoCount").textContent = aiko;
+    document.getElementById("progressFill").style.width = (aiko / 3 * 100) + "%";
+    document.getElementById("roundCount").textContent = total + " 回目";
+
+    const area = document.getElementById("resultArea");
+
+    if (aiko >= 3) {
+      showFinish(area);
+      return;
+    }
+
+    const comment = isAiko ? "🎉 あいこ！" : (wins(player, cpu) ? "あなたの勝ち" : "CPUの勝ち");
+    area.innerHTML = `
+      <div class="vs-row">
+        <div><div class="vs-label">あなた</div>${EMOJI[player]}</div>
+        <div class="vs-text">VS</div>
+        <div><div class="vs-label">CPU</div>${EMOJI[cpu]}</div>
+      </div>
+      <div class="result-text ${isAiko ? 'aiko' : 'other'}">${comment}</div>
+    `;
+  }
+
+  function wins(p, c) {
+    return (p === "グー" && c === "チョキ") ||
+           (p === "チョキ" && c === "パー") ||
+           (p === "パー" && c === "グー");
+  }
+
+  function showFinish(area) {
+    setHandsDisabled(true);
+    const c = COMMENT.find(([lo, hi]) => total >= lo && total <= hi);
+    const msg = c ? c[2] : "記録更新かも！？";
+    area.innerHTML = `
+      <div class="finish">
+        <h2>🎊 あいこ3回達成！</h2>
+        <div class="big-num">${total} 回</div>
+        <div class="comment">${msg}</div>
+        <button class="retry-btn" onclick="reset()">もう一度！</button>
+      </div>
+    `;
+  }
+
+  function reset() {
+    aiko = 0; total = 0;
+    document.getElementById("aikoCount").textContent = 0;
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("roundCount").textContent = "0 回目";
+    document.getElementById("resultArea").innerHTML = '<p style="color:#555">手を選んでじゃんけん！</p>';
+    setHandsDisabled(false);
+  }
+
+  function setHandsDisabled(flag) {
+    document.querySelectorAll(".hand-btn").forEach(b => b.disabled = flag);
+  }
+</script>
+</body>
+</html>
